@@ -9,4 +9,5 @@
     <string name="wearables">Wearables</string>
     <string name="add_wearable">Add</string>
     <string name="cancel_wearable">Cancel</string>
+    <string name="select_wearable">Location</string>
 </resources>

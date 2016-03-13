@@ -1,8 +1,16 @@
 package com.hatchinghealth.nopressure;
 
+import android.Manifest;
+import android.content.DialogInterface;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.DialogFragment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
+import android.telephony.SmsManager;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -17,6 +25,9 @@ import android.widget.ImageView;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    public static boolean HAS_BUTT_SENSOR = false;
+    public static boolean BUTT_PROBLEM = false;
+
     private boolean showingFront = true;
 
     @Override
@@ -30,7 +41,15 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DialogFragment wearableFragment = new AddWearableDialogFragment();
+                AddWearableDialogFragment wearableFragment = new AddWearableDialogFragment();
+                wearableFragment.setOnAddClickListener(new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        HAS_BUTT_SENSOR = true;
+                        drawButt();
+                    }
+                });
                 wearableFragment.show(getSupportFragmentManager(), "wearable");
             }
         });
@@ -39,15 +58,9 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ImageView imageView = (ImageView) findViewById(R.id.image_body);
-
-                if (showingFront) {
-                    imageView.setImageResource(R.drawable.body_back);
-                } else {
-                    imageView.setImageResource(R.drawable.body_front);
-                }
-
                 showingFront = !showingFront;
+                drawButt();
+                sendButtSMS();
             }
         });
 
@@ -59,6 +72,45 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, 1);
+    }
+
+    private void drawButt() {
+        ImageView imageView = (ImageView) findViewById(R.id.image_body);
+
+        if (showingFront) {
+            imageView.setImageResource(R.drawable.body_front);
+        } else {
+            if (HAS_BUTT_SENSOR) {
+                if (BUTT_PROBLEM) {
+                    imageView.setImageResource(R.drawable.body_back_butt_red);
+                } else {
+                    imageView.setImageResource(R.drawable.body_back_butt_green);
+                }
+            } else {
+                imageView.setImageResource(R.drawable.body_back);
+            }
+        }
+    }
+
+    public void playSound() {
+        Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+        r.play();
+    }
+
+    public void showButtNotification() {
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setContentTitle("No Pressure")
+                        .setContentText("You may want to adjust the pressure on your buttocks.");
+    }
+
+    public void sendButtSMS() {
+        SmsManager sms = SmsManager.getDefault();
+        sms.sendTextMessage("6043656015", null,
+                "Your patient may need to adjust the pressure on his or her buttocks.", null, null);
     }
 
     @Override

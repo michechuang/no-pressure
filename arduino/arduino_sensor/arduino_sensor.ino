@@ -75,7 +75,8 @@ static void android_send_data() {
     // save the last time you broadcasted
     prev_millis = current_millis;
     
-    sprintf(msg, "%d", pressure);
+    //sprintf(msg, "%d", pressure);
+    //Serial.println(msg);
 
     if (pressure > 410) {
       if (last_pressure_time == -1) {
@@ -83,10 +84,14 @@ static void android_send_data() {
       } else if (current_millis - last_pressure_time > threshold) {
         pressure_flag = true;
         bt_serial.println("1");
+        //Serial.println("1");
+        pressure_flag = false;
+        last_pressure_time = -1;
       }
     } else {
       if (pressure_flag) {
-        bt_serial.println("0");        
+        bt_serial.println("0");
+        //Serial.println("0");        
       }
       pressure_flag = false;
       last_pressure_time = -1;

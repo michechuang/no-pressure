@@ -2,7 +2,7 @@ package com.hatchinghealth.nopressure;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.app.DialogFragment;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -12,9 +12,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private boolean showingFront = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,12 +26,28 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.add_fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                DialogFragment wearableFragment = new AddWearableDialogFragment();
+                wearableFragment.show(getSupportFragmentManager(), "wearable");
+            }
+        });
+
+        fab = (FloatingActionButton) findViewById(R.id.flip_fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ImageView imageView = (ImageView) findViewById(R.id.image_body);
+
+                if (showingFront) {
+                    imageView.setImageResource(R.drawable.body_back);
+                } else {
+                    imageView.setImageResource(R.drawable.body_front);
+                }
+
+                showingFront = !showingFront;
             }
         });
 

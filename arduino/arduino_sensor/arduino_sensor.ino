@@ -9,11 +9,13 @@
 
 int led_pin = 13; /* The Arduino UNO's built-in LED is on pin 13 */
 int pressure = 0;
+int analog_pin = A0;
 
 unsigned long prev_millis = 0;
 const long interval = 1000;           // interval at which to blink (milliseconds)
 
 SoftwareSerial bt_serial(9, 10);
+
 
 static void android_receive_data();
 static void check_sensors();
@@ -25,7 +27,6 @@ void setup() {
     digitalWrite(led_pin, LOW);
     Serial.begin(BT_MODULE_BAUD_RATE);
     bt_serial.begin(BT_MODULE_BAUD_RATE);
-    Serial.println("Hello World!");
 }
 
 void loop() {
@@ -43,13 +44,13 @@ void loop() {
  * Receive data from Android
  */
 static void android_receive_data() {
-  char next_char;
+  //char next_char;
   
-  if (bt_serial.available()) {
-   next_char = bt_serial.read();
+  //if (bt_serial.available()) {
+   //next_char = bt_serial.read();
 
-   pressure = (next_char == '0' ? 0 : 1);
-  }
+   pressure = analogRead(analog_pin);
+  //}
 }
 
 /**

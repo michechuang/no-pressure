@@ -10,9 +10,12 @@
 int led_pin = 13; /* The Arduino UNO's built-in LED is on pin 13 */
 int pressure = 0;
 int analog_pin = A0;
+int last_pressure_time = -1;
+boolean pressure_flag = false;
 
 unsigned long prev_millis = 0;
 const long interval = 1000;           // interval at which to blink (milliseconds)
+const long threshold = 10000;   // threshold (milliseconds)
 
 SoftwareSerial bt_serial(9, 10);
 
@@ -73,7 +76,23 @@ static void android_send_data() {
     prev_millis = current_millis;
     
     sprintf(msg, "%d", pressure);
-    bt_serial.println(msg);
-    Serial.println(msg);
+
+    if (pressure > 410) {
+      if (last_pressure_time == -1) {
+        last_pressure_time = current_millis;
+      } else if (current_millis - last_pressure_time > threshold) {
+        pressure_flag = true;
+        bt_serial.println("1");
+      }
+    } else {
+      if (pressure_flag) {
+        bt_serial.println("0");        
+      }
+      pressure_flag = false;
+      last_pressure_time = -1;
+    }
+    
+    //bt_serial.println(msg);
+    //Serial.println(msg);
   }
 }

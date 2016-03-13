@@ -3,12 +3,17 @@
  * 
  * Bridges our hardware components with the Android Application
  */
+#include <SoftwareSerial.h>
 
 #define BT_MODULE_BAUD_RATE 9600
 
 int led_pin = 13; /* The Arduino UNO's built-in LED is on pin 13 */
-int state = 0;
-int last_state = 0;
+int pressure = 0;
+
+unsigned long prev_millis = 0;
+const long interval = 1000;           // interval at which to blink (milliseconds)
+
+SoftwareSerial bt_serial(9, 10);
 
 static void android_receive_data();
 static void check_sensors();
@@ -19,6 +24,8 @@ void setup() {
     pinMode(led_pin, OUTPUT);
     digitalWrite(led_pin, LOW);
     Serial.begin(BT_MODULE_BAUD_RATE);
+    bt_serial.begin(BT_MODULE_BAUD_RATE);
+    Serial.println("Hello World!");
 }
 
 void loop() {
@@ -38,10 +45,10 @@ void loop() {
 static void android_receive_data() {
   char next_char;
   
-  if (Serial.available()) {
-   next_char = Serial.read();
+  if (bt_serial.available()) {
+   next_char = bt_serial.read();
 
-   state = (next_char == '0' ? 0 : 1);
+   pressure = (next_char == '0' ? 0 : 1);
   }
 }
 
@@ -49,7 +56,7 @@ static void android_receive_data() {
  * Do stuff on hardware
  */
 static void check_sensors() {
-  digitalWrite(led_pin, state);
+  digitalWrite(led_pin, pressure);
   return;
 }
 
@@ -58,10 +65,14 @@ static void check_sensors() {
  */
 static void android_send_data() {
   char msg[32];
+  unsigned long current_millis = millis();
 
-  if (last_state != state) {
-    sprintf(msg, "LED: %d", state);
-    Serial.println(msg);  
-    last_state = state;
+  if (current_millis - prev_millis >= interval) {
+    // save the last time you broadcasted
+    prev_millis = current_millis;
+    
+    sprintf(msg, "%d", pressure);
+    bt_serial.println(msg);
+    Serial.println(msg);
   }
 }
